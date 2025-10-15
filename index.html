@@ -3,38 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON ডাটা ম্যানেজমেন্ট টুল</title>
+    <title>AI-Powered JSON ডাটা ম্যানেজমেন্ট টুল v4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Hind Siliguri', sans-serif;
+   <style>
+        body { font-family: 'Hind Siliguri', sans-serif; }
+        .modal { transition: opacity 0.25s ease; }
+        .modal-active { overflow-x: hidden; overflow-y: auto; }
+        .modal-container { transition: all 0.25s ease; }
+        .modal.hidden .modal-container { transform: scale(0.95); }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) { .desktop-table { display: none; } .mobile-cards { display: block; } }
+        @media (min-width: 769px) { .desktop-table { display: table; } .mobile-cards { display: none; } }
+        
+        .card-item { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 5px solid #3b82f6; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb; }
+        .card-serial { font-size: 1.25rem; font-weight: 700; color: #1f2937; }
+        .card-actions { display: flex; gap: 8px; }
+        .card-content { display: flex; flex-direction: column; gap: 8px; }
+        .card-field { display: flex; flex-direction: column; gap: 4px; }
+        .card-label { font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-value { font-size: 0.95rem; color: #1f2937; line-height: 1.5; }
+
+        /* Sorting Styles */
+        .sortable { cursor: pointer; user-select: none; }
+        .sortable .sort-icon { opacity: 0.4; transition: opacity 0.2s; }
+        .sortable:hover .sort-icon { opacity: 0.8; }
+        .sortable.asc .sort-icon.up, .sortable.desc .sort-icon.down { opacity: 1; color: #3b82f6; }
+
+        /* Pagination Styles */
+        .pagination-btn {
+            min-width: 40px; height: 40px; display: inline-flex; justify-content: center; align-items: center;
+            border: 1px solid #d1d5db; background-color: white; color: #374151;
+            border-radius: 8px; font-weight: 500; transition: all 0.2s;
         }
-        .modal {
-            transition: opacity 0.25s ease;
+        .pagination-btn:hover:not([disabled]) { background-color: #f3f4f6; border-color: #9ca3af; }
+        .pagination-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+        .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* AI Button Style */
+        .ai-btn {
+            position: absolute; inset-y: 0; right: 0; display: flex; align-items: center;
+            padding: 0 0.75rem; color: #9ca3af; transition: color 0.2s;
         }
-        .modal-active {
-            overflow-x: hidden;
-            overflow-y: auto;
-        }
-        .modal-container {
-            transition: all 0.25s ease;
-        }
-        .modal.hidden .modal-container {
-            transform: scale(0.95);
-        }
-    </style>
+        .ai-btn:hover { color: #3b82f6; }
+   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
     <div class="container mx-auto p-4 md:p-8">
         <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
-            <h1 class="text-3xl font-bold text-center text-gray-700 mb-2">ডাটা ম্যানেজমেন্ট টুল</h1>
-            <p class="text-center text-gray-500 mb-6">আপনার data.json ফাইলটি আপলোড করে ডাটা ম্যানেজ করুন।</p>
+            <h1 class="text-3xl font-bold text-center text-gray-700 mb-2">AI-Powered ডাটা ম্যানেজমেন্ট টুল</h1>
+            <p id="subtitle" class="text-center text-gray-500 mb-6">আপনার ডাটা ব্রাউজারে লোড করা আছে।</p>
             
-            <div class="flex flex-col items-center justify-center bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300">
+            <div id="upload-section" class="flex flex-col items-center justify-center bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300">
                 <label for="file-upload" class="cursor-pointer bg-blue-500 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-blue-600 transition-all">
-                    data.json ফাইল আপলোড করুন
+                    নতুন data.json ফাইল আপলোড করুন
                 </label>
                 <input id="file-upload" type="file" class="hidden" accept=".json">
                 <p id="file-name" class="mt-3 text-sm text-gray-600">কোনো ফাইল সিলেক্ট করা হয়নি</p>
@@ -47,129 +72,68 @@
                     <input type="text" id="search-input" placeholder="সিরিয়াল, প্রশ্ন বা উত্তর দিয়ে খুঁজুন..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
                     <div class="flex flex-col md:flex-row gap-4">
                         <button id="add-new-btn" class="w-full bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-all shadow-md">নতুন ডাটা যোগ করুন</button>
-                        <button id="download-btn" class="w-full bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-600 transition-all shadow-md">আপডেটেড ফাইল ডাউনলোড করুন</button>
+                        <button id="download-btn" class="w-full bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-600 transition-all shadow-md">ফাইল ডাউনলোড করুন</button>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-lg overflow-x-auto">
+            <div class="bg-white rounded-2xl shadow-lg overflow-x-auto desktop-table">
                 <table class="w-full text-sm text-left text-gray-600">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-100">
                         <tr>
-                            <th scope="col" class="px-6 py-3">সিরিয়াল</th>
-                            <th scope="col" class="px-6 py-3">প্রশ্ন</th>
-                            <th scope="col" class="px-6 py-3">উত্তর</th>
+                            <th scope="col" class="px-6 py-3 sortable" data-sort="serial_no"><div class="flex items-center gap-2">সিরিয়াল <span class="sort-icons"><svg class="sort-icon up h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 3a1 1 0 01.707.293l5 5a1 1 0 01-1.414 1.414L11 6.414V17a1 1 0 11-2 0V6.414L5.707 9.707a1 1 0 01-1.414-1.414l5-5A1 1 0 0110 3z"/></svg><svg class="sort-icon down h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 17a1 1 0 01-.707-.293l-5-5a1 1 0 011.414-1.414L9 13.586V3a1 1 0 112 0v10.586l3.293-3.293a1 1 0 011.414 1.414l-5 5A1 1 0 0110 17z"/></svg></span></div></th>
+                            <th scope="col" class="px-6 py-3 sortable" data-sort="question"><div class="flex items-center gap-2">প্রশ্ন <span class="sort-icons"><svg class="sort-icon up h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 3a1 1 0 01.707.293l5 5a1 1 0 01-1.414 1.414L11 6.414V17a1 1 0 11-2 0V6.414L5.707 9.707a1 1 0 01-1.414-1.414l5-5A1 1 0 0110 3z"/></svg><svg class="sort-icon down h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 17a1 1 0 01-.707-.293l-5-5a1 1 0 011.414-1.414L9 13.586V3a1 1 0 112 0v10.586l3.293-3.293a1 1 0 011.414 1.414l-5 5A1 1 0 0110 17z"/></svg></span></div></th>
+                            <th scope="col" class="px-6 py-3 sortable" data-sort="answer"><div class="flex items-center gap-2">উত্তর <span class="sort-icons"><svg class="sort-icon up h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 3a1 1 0 01.707.293l5 5a1 1 0 01-1.414 1.414L11 6.414V17a1 1 0 11-2 0V6.414L5.707 9.707a1 1 0 01-1.414-1.414l5-5A1 1 0 0110 3z"/></svg><svg class="sort-icon down h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 17a1 1 0 01-.707-.293l-5-5a1 1 0 011.414-1.414L9 13.586V3a1 1 0 112 0v10.586l3.293-3.293a1 1 0 011.414 1.414l-5 5A1 1 0 0110 17z"/></svg></span></div></th>
                             <th scope="col" class="px-6 py-3 text-center">অ্যাকশন</th>
                         </tr>
                     </thead>
-                    <tbody id="data-table-body">
-                        <!-- Data rows will be inserted here by JavaScript -->
-                    </tbody>
+                    <tbody id="data-table-body"></tbody>
                 </table>
-                 <p id="no-results" class="text-center py-8 text-gray-500 hidden">কোনো ডাটা পাওয়া যায়নি।</p>
+            </div>
+            
+            <div id="mobile-data-cards" class="mobile-cards"></div>
+            <p id="no-results" class="text-center py-8 text-gray-500 hidden">কোনো ডাটা পাওয়া যায়নি।</p>
+            
+            <div id="pagination-section" class="hidden mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2 text-sm">
+                    <span>প্রতি পৃষ্ঠায়:</span>
+                    <select id="rows-per-page" class="border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-500">
+                        <option value="10">১০</option><option value="20">২০</option><option value="50">৫০</option><option value="100">১০০</option>
+                    </select>
+                </div>
+                <div id="pagination-controls" class="flex items-center gap-2"></div>
             </div>
         </div>
     </div>
 
-    <!-- Modal for Add/Edit -->
+    <!-- Add/Edit Modal -->
     <div id="form-modal" class="modal fixed w-full h-full top-0 left-0 flex items-center justify-center z-50 hidden bg-black bg-opacity-50">
         <div class="modal-container bg-white w-11/12 md:max-w-3xl mx-auto rounded-2xl shadow-lg z-50 flex flex-col max-h-[90vh] transform transition-all duration-300">
-            <!-- Modal Header -->
             <div class="flex justify-between items-center p-5 border-b sticky top-0 bg-white rounded-t-2xl z-10">
                 <p id="modal-title" class="text-2xl font-bold text-gray-800">ফর্ম</p>
-                <button id="modal-close-btn" class="cursor-pointer z-50 p-2 rounded-full hover:bg-gray-200 transition-colors">
-                    <svg class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <button id="modal-close-btn" class="p-2 rounded-full hover:bg-gray-200"><svg class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
-
-            <!-- Modal Body -->
-            <div class="modal-body overflow-y-auto">
-                <form id="data-form" class="p-6 space-y-6">
+            <div class="modal-body overflow-y-auto p-6">
+                <form id="data-form" class="space-y-6">
                     <input type="hidden" id="edit-id">
-
-                    <!-- Section 1: Basic Info -->
-                    <fieldset class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="serial_no" class="block text-sm font-semibold text-gray-600 mb-1">সিরিয়াল নং (বাংলায়)</label>
-                            <input type="text" id="serial_no" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        </div>
-                        <div>
-                            <label for="year" class="block text-sm font-semibold text-gray-600 mb-1">বছর</label>
-                            <input type="number" id="year" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        </div>
-                    </fieldset>
-                    
-                    <hr/>
-
-                    <!-- Section 2: Core Content -->
-                    <fieldset class="space-y-4">
-                        <div>
-                            <label for="question" class="block text-sm font-semibold text-gray-600 mb-1">প্রশ্ন</label>
-                            <textarea id="question" rows="2" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
-                        </div>
-                        <div>
-                            <label for="answer" class="block text-sm font-semibold text-gray-600 mb-1">উত্তর</label>
-                            <textarea id="answer" rows="3" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
-                        </div>
-                        <div>
-                            <label for="details" class="block text-sm font-semibold text-gray-600 mb-1">বিস্তারিত</label>
-                            <textarea id="details" rows="4" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
-                        </div>
-                    </fieldset>
-                    
-                    <hr/>
-                    
-                    <!-- Section 3: Legal & Reference -->
+                    <fieldset class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label for="serial_no" class="block text-sm font-semibold text-gray-600 mb-1">সিরিয়াল নং (বাংলায়)</label><input type="text" id="serial_no" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div><div><label for="year" class="block text-sm font-semibold text-gray-600 mb-1">বছর</label><input type="number" id="year" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div></fieldset><hr/>
+                    <fieldset class="space-y-4"><div><label for="question" class="block text-sm font-semibold text-gray-600 mb-1">প্রশ্ন</label><textarea id="question" rows="2" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></textarea></div><div><label for="answer" class="block text-sm font-semibold text-gray-600 mb-1">উত্তর</label><textarea id="answer" rows="3" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></textarea></div><div><label for="details" class="block text-sm font-semibold text-gray-600 mb-1">বিস্তারিত</label><textarea id="details" rows="4" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></textarea></div></fieldset><hr/>
                     <fieldset class="space-y-4">
                          <div>
                             <label for="key_point" class="block text-sm font-semibold text-gray-600 mb-1">মূল পয়েন্ট</label>
-                            <input type="text" id="key_point" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <div class="relative"><input type="text" id="key_point" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition pr-10"><button type="button" id="generate-key-point-btn" class="ai-btn" title="AI দিয়ে মূল পয়েন্ট তৈরি করুন">✨</button></div>
                         </div>
-                        <div>
-                            <label for="law_section" class="block text-sm font-semibold text-gray-600 mb-1">আইনের ধারা</label>
-                            <input type="text" id="law_section" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        </div>
-                        <div>
-                            <label for="case_reference" class="block text-sm font-semibold text-gray-600 mb-1">মামলার রেফারেন্স</label>
-                            <input type="text" id="case_reference" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        </div>
-                    </fieldset>
-                    
-                    <hr/>
-
-                    <!-- Section 4: Categorization -->
+                        <div><label for="law_section" class="block text-sm font-semibold text-gray-600 mb-1">আইনের ধারা</label><input type="text" id="law_section" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div><div><label for="case_reference" class="block text-sm font-semibold text-gray-600 mb-1">মামলার রেফারেন্স</label><input type="text" id="case_reference" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div></fieldset><hr/>
                      <fieldset class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="tags" class="block text-sm font-semibold text-gray-600 mb-1">ট্যাগ (কমা দিয়ে আলাদা)</label>
-                            <input type="text" id="tags" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <div class="relative"><input type="text" id="tags" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition pr-10"><button type="button" id="generate-tags-btn" class="ai-btn" title="AI দিয়ে ট্যাগ ও কীওয়ার্ড তৈরি করুন">✨</button></div>
                         </div>
-                        <div>
-                            <label for="keywords" class="block text-sm font-semibold text-gray-600 mb-1">কীওয়ার্ড (কমা দিয়ে আলাদা)</label>
-                            <input type="text" id="keywords" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        </div>
-                     </fieldset>
-                    <hr/>
-                    <!-- Section 5: Source & Relations -->
-                    <fieldset class="space-y-4">
-                        <div>
-                            <label for="source" class="block text-sm font-semibold text-gray-600 mb-1">সোর্স</label>
-                            <input type="text" id="source" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        </div>
-                        <div>
-                            <label for="law_reference_link" class="block text-sm font-semibold text-gray-600 mb-1">আইন রেফারেন্স লিংক</label>
-                            <input type="url" id="law_reference_link" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        </div>
-                        <div>
-                            <label for="related_ids" class="block text-sm font-semibold text-gray-600 mb-1">সম্পর্কিত আইডি (কমা দিয়ে আলাদা)</label>
-                            <input type="text" id="related_ids" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        </div>
-                    </fieldset>
+                        <div><label for="keywords" class="block text-sm font-semibold text-gray-600 mb-1">কীওয়ার্ড (কমা দিয়ে আলাদা)</label><input type="text" id="keywords" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div>
+                     </fieldset><hr/>
+                    <fieldset class="space-y-4"><div><label for="source" class="block text-sm font-semibold text-gray-600 mb-1">সোর্স</label><input type="text" id="source" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div><div><label for="law_reference_link" class="block text-sm font-semibold text-gray-600 mb-1">আইন রেফারেন্স লিংক</label><input type="url" id="law_reference_link" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div><div><label for="related_ids" class="block text-sm font-semibold text-gray-600 mb-1">সম্পর্কিত আইডি (কমা দিয়ে আলাদা)</label><input type="text" id="related_ids" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div></fieldset>
                 </form>
             </div>
-            
-            <!-- Modal Footer -->
             <div class="flex justify-end items-center gap-4 p-5 border-t sticky bottom-0 bg-gray-50 rounded-b-2xl z-10">
                 <button type="button" id="modal-cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-all shadow-sm">বাতিল</button>
                 <button type="submit" form="data-form" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-all shadow-sm">সংরক্ষণ করুন</button>
@@ -177,253 +141,171 @@
         </div>
     </div>
     
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal fixed w-full h-full top-0 left-0 flex items-center justify-center z-50 hidden bg-black bg-opacity-50">
+        <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded-xl shadow-lg z-50 p-6 text-center">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">আপনি কি নিশ্চিত?</h3>
+            <p class="text-gray-600 mb-6">আপনি এই ডাটাটি ডিলিট করতে চান? এই কাজটি আর ফেরানো যাবে না।</p>
+            <div class="flex justify-center gap-4"><button id="cancel-delete-btn" class="py-2 px-6 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">না, বাতিল করুন</button><button id="confirm-delete-btn" class="py-2 px-6 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">হ্যাঁ, ডিলিট করুন</button></div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden items-center justify-center">
+        <div class="text-white text-lg flex items-center gap-3 bg-gray-800 px-6 py-3 rounded-lg">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <span>প্রসেস করা হচ্ছে...</span>
+        </div>
+    </div>
+    
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        let jsonData = [];
-        const fileUpload = document.getElementById('file-upload');
-        const fileNameDisplay = document.getElementById('file-name');
-        const dataControls = document.getElementById('data-controls');
-        const tableBody = document.getElementById('data-table-body');
-        const searchInput = document.getElementById('search-input');
-        const noResults = document.getElementById('no-results');
+        let jsonData = [], filteredData = [], itemToDeleteId = null;
+        let currentPage = 1, rowsPerPage = 10, sortColumn = 'serial_no', sortDirection = 'asc';
 
-        const modal = document.getElementById('form-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const form = document.getElementById('data-form');
-        const editIdInput = document.getElementById('edit-id');
+        // Element Selectors from v3...
+        const fileUpload = document.getElementById('file-upload'), fileNameDisplay = document.getElementById('file-name'),
+              dataControls = document.getElementById('data-controls'), tableBody = document.getElementById('data-table-body'),
+              mobileCardsContainer = document.getElementById('mobile-data-cards'), searchInput = document.getElementById('search-input'),
+              noResults = document.getElementById('no-results'), subtitle = document.getElementById('subtitle'),
+              formModal = document.getElementById('form-modal'), deleteModal = document.getElementById('delete-modal'),
+              modalTitle = document.getElementById('modal-title'), form = document.getElementById('data-form'),
+              editIdInput = document.getElementById('edit-id'), confirmDeleteBtn = document.getElementById('confirm-delete-btn'),
+              cancelDeleteBtn = document.getElementById('cancel-delete-btn'), paginationSection = document.getElementById('pagination-section'),
+              paginationControls = document.getElementById('pagination-controls'), rowsPerPageSelect = document.getElementById('rows-per-page'),
+              modalCloseBtn = document.getElementById('modal-close-btn'), modalCancelBtn = document.getElementById('modal-cancel-btn');
 
-        const bengaliToEnglishNumber = (str) => {
-            const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-            const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-            let englishStr = '';
-            if (typeof str !== 'string') return '';
-            for (let i = 0; i < str.length; i++) {
-                const index = bengaliDigits.indexOf(str[i]);
-                if (index !== -1) {
-                    englishStr += englishDigits[index];
-                } else {
-                    if(!isNaN(parseInt(str[i]))){
-                         englishStr += str[i];
-                    }
-                }
-            }
-            return englishStr;
-        };
+        // New AI related selectors
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const generateKeyPointBtn = document.getElementById('generate-key-point-btn');
+        const generateTagsBtn = document.getElementById('generate-tags-btn');
 
-        const englishToBengaliNumber = (str) => {
-            const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-            const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-            let bengaliStr = '';
-            if (typeof str !== 'string') str = String(str);
-            for (let i = 0; i < str.length; i++) {
-                const index = englishDigits.indexOf(str[i]);
-                if (index !== -1) {
-                    bengaliStr += bengaliDigits[index];
-                } else {
-                    bengaliStr += str[i];
-                }
-            }
-            return bengaliStr;
-        };
+        // Utility and Data Persistence functions from v3...
+        const bengaliToEnglishNumber = str => { const bn='০১২৩৪৫৬৭৮৯', en='0123456789'; if(typeof str!=='string')return''; return str.split('').map(c=>bn.indexOf(c)!==-1?en[bn.indexOf(c)]:c).join(''); };
+        const englishToBengaliNumber = str => { const en='0123456789', bn='০১২৩৪৫৬৭৮৯'; if(typeof str!=='string')str=String(str); return str.split('').map(c=>en.indexOf(c)!==-1?bn[en.indexOf(c)]:c).join(''); };
+        const getNextAvailableId = () => { if (jsonData.length === 0) return 1; const ids = new Set(jsonData.map(item => item.id)); let nextId = 1; while (ids.has(nextId)) nextId++; return nextId; };
+        const saveDataToLocal = () => localStorage.setItem('jsonDataManager', JSON.stringify(jsonData));
+        const loadDataFromLocal = () => { const d = localStorage.getItem('jsonDataManager'); if (d) { try { jsonData = JSON.parse(d); dataControls.classList.remove('hidden'); updateDisplay(); } catch (e) { subtitle.textContent = "localStorage থেকে ডাটা লোড করা যায়নি।"; } } else { subtitle.textContent = "কোনো ডাটা লোড করা নেই। একটি ফাইল আপলোড করুন।"; }};
 
-        const getNextAvailableId = () => {
-            if (jsonData.length === 0) {
-                return 1;
-            }
-            const existingIds = new Set(jsonData.map(item => item.id));
-            let nextId = 1;
-            while (existingIds.has(nextId)) {
-                nextId++;
-            }
-            return nextId;
-        };
+        // UI update functions (sorting, pagination, rendering) from v3...
+        const updateDisplay = () => { const term = searchInput.value.toLowerCase(); filteredData = jsonData.filter(i => (i.serial_no&&i.serial_no.toString().toLowerCase().includes(term))||(i.question&&i.question.toLowerCase().includes(term))||(i.answer&&i.answer.toLowerCase().includes(term))); filteredData.sort((a,b)=>{let vA=a[sortColumn],vB=b[sortColumn];if(sortColumn==='serial_no'){vA=parseInt(bengaliToEnglishNumber(vA||'0'));vB=parseInt(bengaliToEnglishNumber(vB||'0'));}else if(typeof vA==='string'){vA=(vA||'').toLowerCase();vB=(vB||'').toLowerCase();}if(vA<vB)return sortDirection==='asc'?-1:1;if(vA>vB)return sortDirection==='asc'?1:-1;return 0;}); subtitle.textContent=`মোট ${englishToBengaliNumber(jsonData.length)} টি ডাটার মধ্যে ${englishToBengaliNumber(filteredData.length)} টি দেখানো হচ্ছে।`; renderPaginatedData(); setupPagination(); updateSortIcons(); };
+        const renderPaginatedData = () => { tableBody.innerHTML=''; mobileCardsContainer.innerHTML=''; noResults.classList.toggle('hidden', filteredData.length>0); paginationSection.classList.toggle('hidden', filteredData.length<=rowsPerPage); const start=(currentPage-1)*rowsPerPage; const pageItems=filteredData.slice(start,start+rowsPerPage); pageItems.forEach(item=>{const row=document.createElement('tr'); row.className='bg-white border-b hover:bg-gray-50'; row.innerHTML=`<td class="px-6 py-4 font-bold text-gray-900">${item.serial_no||''}</td><td class="px-6 py-4">${(item.question||'').substring(0,70)}...</td><td class="px-6 py-4">${(item.answer||'').substring(0,100)}...</td><td class="px-6 py-4 text-center"><button class="edit-btn text-blue-600 hover:underline font-semibold" data-id="${item.id}">এডিট</button><button class="delete-btn text-red-600 hover:underline font-semibold ml-4" data-id="${item.id}">ডিলিট</button></td>`; tableBody.appendChild(row); const card=document.createElement('div'); card.className='card-item'; card.innerHTML=`<div class="card-header"><span class="card-serial">${item.serial_no||''}</span><div class="card-actions"><button class="edit-btn text-blue-500 font-bold" data-id="${item.id}">এডিট</button><button class="delete-btn text-red-500 font-bold" data-id="${item.id}">ডিলিট</button></div></div><div class="card-content"><div class="card-field"><label class="card-label">প্রশ্ন</label><p class="card-value">${item.question||''}</p></div><div class="card-field"><label class="card-label">উত্তর</label><p class="card-value">${(item.answer||'').substring(0,150)}...</p></div></div>`; mobileCardsContainer.appendChild(card);});};
+        const setupPagination = () => { paginationControls.innerHTML=''; const pageCount=Math.ceil(filteredData.length/rowsPerPage); if(pageCount<=1)return; const prevBtn=document.createElement('button');prevBtn.innerHTML='&laquo;';prevBtn.className='pagination-btn';prevBtn.disabled=currentPage===1;prevBtn.addEventListener('click',()=>{if(currentPage>1){currentPage--;updateDisplay();}});paginationControls.appendChild(prevBtn); for(let i=1;i<=pageCount;i++){const btn=document.createElement('button');btn.innerText=englishToBengaliNumber(i);btn.className=`pagination-btn ${i===currentPage?'active':''}`;btn.addEventListener('click',()=>{currentPage=i;updateDisplay();});paginationControls.appendChild(btn);} const nextBtn=document.createElement('button');nextBtn.innerHTML='&raquo;';nextBtn.className='pagination-btn';nextBtn.disabled=currentPage===pageCount;nextBtn.addEventListener('click',()=>{if(currentPage<pageCount){currentPage++;updateDisplay();}});paginationControls.appendChild(nextBtn); };
+        const handleSort=(e)=>{const newSortColumn=e.currentTarget.getAttribute('data-sort');if(sortColumn===newSortColumn){sortDirection=sortDirection==='asc'?'desc':'asc';}else{sortColumn=newSortColumn;sortDirection='asc';}currentPage=1;updateDisplay();};
+        const updateSortIcons=()=>{document.querySelectorAll('.sortable').forEach(h=>{h.classList.remove('asc','desc');if(h.getAttribute('data-sort')===sortColumn){h.classList.add(sortDirection);}});};
+        const openFormModal=(title,data=null)=>{ modalTitle.textContent=title;form.reset();if(data){editIdInput.value=data.id; document.getElementById('serial_no').value=data.serial_no||''; document.getElementById('question').value=data.question||''; document.getElementById('answer').value=data.answer||''; document.getElementById('details').value=data.details||''; document.getElementById('key_point').value=data.key_point||''; document.getElementById('law_section').value=data.law_section||''; document.getElementById('case_reference').value=data.case_reference||''; document.getElementById('tags').value=Array.isArray(data.tags)?data.tags.join(', '):''; document.getElementById('keywords').value=Array.isArray(data.keywords)?data.keywords.join(', '):''; document.getElementById('year').value=data.year||''; document.getElementById('source').value=data.source||''; document.getElementById('law_reference_link').value=data.law_reference_link||''; document.getElementById('related_ids').value=Array.isArray(data.related_ids)?data.related_ids.join(', '):'';}else{editIdInput.value=''; document.getElementById('serial_no').value=englishToBengaliNumber(getNextAvailableId().toString());} formModal.classList.remove('hidden');document.body.classList.add('modal-active');};
+        const closeFormModal=()=>{formModal.classList.add('hidden');document.body.classList.remove('modal-active');};
+        const openDeleteModal=(id)=>{itemToDeleteId=id;deleteModal.classList.remove('hidden');document.body.classList.add('modal-active');};
+        const closeDeleteModal=()=>{itemToDeleteId=null;deleteModal.classList.add('hidden');document.body.classList.remove('modal-active');};
 
-        fileUpload.addEventListener('change', event => {
-            const file = event.target.files[0];
-            if (file) {
-                fileNameDisplay.textContent = file.name;
-                const reader = new FileReader();
-                reader.onload = e => {
-                    try {
-                        jsonData = JSON.parse(e.target.result);
-                        renderTable(jsonData);
-                        dataControls.classList.remove('hidden');
-                    } catch (error) {
-                        alert('ত্রুটি: ফাইলটি সঠিক JSON ফরম্যাটে নেই।');
-                        console.error("JSON parsing error:", error);
-                    }
-                };
-                reader.readAsText(file);
-            }
-        });
+        // --- New Gemini API and Loader Functions ---
+        const showLoader = () => loadingOverlay.classList.remove('hidden');
+        const hideLoader = () => loadingOverlay.classList.add('hidden');
 
-        const renderTable = (data) => {
-            tableBody.innerHTML = '';
-            if (data.length === 0) {
-                noResults.classList.remove('hidden');
-            } else {
-                 noResults.classList.add('hidden');
-            }
+        async function callGeminiAPI(prompt, isJson = false) {
+            const apiKey = ""; // Left empty as per instructions
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             
-            data.forEach(item => {
-                const row = document.createElement('tr');
-                row.className = 'bg-white border-b hover:bg-gray-50';
-                row.innerHTML = `
-                    <td class="px-6 py-4 font-bold text-gray-900">${item.serial_no || ''}</td>
-                    <td class="px-6 py-4">${item.question || ''}</td>
-                    <td class="px-6 py-4">${item.answer || ''}</td>
-                    <td class="px-6 py-4 text-center">
-                        <button class="edit-btn text-blue-600 hover:underline font-semibold" data-id="${item.id}">এডিট</button>
-                        <button class="delete-btn text-red-600 hover:underline font-semibold ml-4" data-id="${item.id}">ডিলিট</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        };
-
-        searchInput.addEventListener('keyup', () => {
-            const searchTerm = searchInput.value.toLowerCase();
-            const filteredData = jsonData.filter(item => 
-                (item.serial_no && item.serial_no.toString().toLowerCase().includes(searchTerm)) ||
-                (item.question && item.question.toLowerCase().includes(searchTerm)) ||
-                (item.answer && item.answer.toLowerCase().includes(searchTerm))
-            );
-            renderTable(filteredData);
-        });
-
-        const openModal = (title, data = null) => {
-            const serialNoInput = document.getElementById('serial_no');
-            modalTitle.textContent = title;
-            form.reset();
-            
-            if (data) { // Editing existing data
-                editIdInput.value = data.id;
-                serialNoInput.value = data.serial_no || '';
-                serialNoInput.readOnly = false; // Allow editing serial for existing items
-                document.getElementById('question').value = data.question || '';
-                document.getElementById('answer').value = data.answer || '';
-                document.getElementById('details').value = data.details || '';
-                document.getElementById('key_point').value = data.key_point || '';
-                document.getElementById('law_section').value = data.law_section || '';
-                document.getElementById('case_reference').value = data.case_reference || '';
-                document.getElementById('tags').value = Array.isArray(data.tags) ? data.tags.join(', ') : '';
-                document.getElementById('keywords').value = Array.isArray(data.keywords) ? data.keywords.join(', ') : '';
-                document.getElementById('year').value = data.year || '';
-                document.getElementById('source').value = data.source || '';
-                document.getElementById('law_reference_link').value = data.law_reference_link || '';
-                document.getElementById('related_ids').value = Array.isArray(data.related_ids) ? data.related_ids.join(', ') : '';
-            } else { // Adding new data
-                editIdInput.value = '';
-                const nextId = getNextAvailableId();
-                const nextSerialNo = englishToBengaliNumber(nextId.toString());
-                serialNoInput.value = nextSerialNo;
-                serialNoInput.readOnly = true; // Make serial read-only for new items
-            }
-            modal.classList.remove('hidden');
-            document.body.classList.add('modal-active');
-        };
-
-        const closeModal = () => {
-            modal.classList.add('hidden');
-            document.body.classList.remove('modal-active');
-        };
-
-        document.getElementById('add-new-btn').addEventListener('click', () => {
-            openModal('নতুন ডাটা যোগ করুন');
-        });
-        
-        tableBody.addEventListener('click', e => {
-            if (e.target.classList.contains('edit-btn')) {
-                const id = e.target.getAttribute('data-id');
-                const dataToEdit = jsonData.find(item => item.id == id);
-                if (dataToEdit) {
-                    openModal('ডাটা এডিট করুন', dataToEdit);
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    ...(isJson && { responseMimeType: "application/json" })
                 }
-            }
-             if (e.target.classList.contains('delete-btn')) {
-                const id = e.target.getAttribute('data-id');
-                if(confirm('আপনি কি এই ডাটাটি ডিলিট করতে চান?')) {
-                    jsonData = jsonData.filter(item => item.id != id);
-                    renderTable(jsonData);
-                }
-            }
-        });
-
-        document.getElementById('modal-close-btn').addEventListener('click', closeModal);
-        document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
-
-        form.addEventListener('submit', e => {
-            e.preventDefault();
-            const idToEdit = editIdInput.value;
-            const serialNo = document.getElementById('serial_no').value;
-            const englishSerialStr = bengaliToEnglishNumber(serialNo);
-            const newId = parseInt(englishSerialStr, 10);
-
-            if (isNaN(newId)) {
-                alert('অনুগ্রহ করে সঠিক সিরিয়াল নম্বর দিন।');
-                return;
-            }
-
-            const isDuplicate = jsonData.some(item => {
-                if (idToEdit && item.id == idToEdit) {
-                    return false;
-                }
-                return item.id === newId;
-            });
-
-            if (isDuplicate) {
-                alert('ত্রুটি: এই সিরিয়াল নম্বরটি ইতিমধ্যে ব্যবহার করা হয়েছে। অনুগ্রহ করে অন্য একটি নম্বর দিন।');
-                return;
-            }
-
-            const formData = {
-                id: newId,
-                serial_no: serialNo,
-                question: document.getElementById('question').value,
-                answer: document.getElementById('answer').value,
-                details: document.getElementById('details').value,
-                key_point: document.getElementById('key_point').value,
-                law_section: document.getElementById('law_section').value,
-                case_reference: document.getElementById('case_reference').value,
-                tags: document.getElementById('tags').value.split(',').map(s => s.trim()).filter(Boolean),
-                keywords: document.getElementById('keywords').value.split(',').map(s => s.trim()).filter(Boolean),
-                year: parseInt(document.getElementById('year').value) || null,
-                source: document.getElementById('source').value,
-                law_reference_link: document.getElementById('law_reference_link').value,
-                related_ids: document.getElementById('related_ids').value.split(',').map(s => parseInt(bengaliToEnglishNumber(s.trim()))).filter(num => !isNaN(num)),
-                last_updated: new Date().toISOString().split('T')[0]
             };
 
-            if (idToEdit) {
-                const index = jsonData.findIndex(item => item.id == idToEdit);
-                if (index !== -1) {
-                    const originalData = jsonData[index];
-                    jsonData[index] = { ...originalData, ...formData };
+            let attempts = 0;
+            while (attempts < 5) { // Retry up to 5 times
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    if (result.candidates && result.candidates[0].content.parts[0].text) {
+                        return result.candidates[0].content.parts[0].text;
+                    } else {
+                        throw new Error("No content found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`API call attempt ${attempts + 1} failed:`, error);
+                    attempts++;
+                    if (attempts >= 5) {
+                         throw error; // Rethrow error after max attempts
+                    }
+                    const delay = Math.pow(2, attempts) * 100; // Exponential backoff
+                    await new Promise(res => setTimeout(res, delay));
                 }
-            } else {
-                jsonData.push(formData);
+            }
+        }
+
+        generateKeyPointBtn.addEventListener('click', async () => {
+            const answer = document.getElementById('answer').value;
+            const details = document.getElementById('details').value;
+
+            if (!answer && !details) {
+                alert('অনুগ্রহ করে "উত্তর" বা "বিস্তারিত" অংশটি পূরণ করুন।');
+                return;
             }
             
-            jsonData.sort((a, b) => (parseInt(bengaliToEnglishNumber(a.serial_no), 10) || 0) - (parseInt(bengaliToEnglishNumber(b.serial_no), 10) || 0));
-
-            renderTable(jsonData);
-            closeModal();
+            showLoader();
+            const prompt = `নিচের লেখাটি পড়ে এর একটি সংক্ষিপ্ত ও প্রধান মূল পয়েন্ট এক বাক্যে তৈরি করে দাও:\n\nউত্তর: ${answer}\nবিস্তারিত: ${details}`;
+            try {
+                const result = await callGeminiAPI(prompt);
+                document.getElementById('key_point').value = result.trim();
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                alert("দুঃখিত, AI দিয়ে মূল পয়েন্ট তৈরি করা সম্ভব হয়নি।");
+            } finally {
+                hideLoader();
+            }
+        });
+        
+        generateTagsBtn.addEventListener('click', async () => {
+            const question = document.getElementById('question').value;
+            const answer = document.getElementById('answer').value;
+            if (!question || !answer) {
+                alert('অনুগ্রহ করে "প্রশ্ন" এবং "উত্তর" অংশটি পূরণ করুন।');
+                return;
+            }
+            
+            showLoader();
+            const prompt = `নিচের প্রশ্ন ও উত্তরের উপর ভিত্তি করে কিছু ট্যাগ এবং কীওয়ার্ড তৈরি করে দাও। আউটপুটটি অবশ্যই JSON ফরম্যাটে দিবে যেখানে 'tags' এবং 'keywords' নামে দুটি কী থাকবে এবং তাদের মান কমা-সেপারেটেড স্ট্রিং হবে।\n\nপ্রশ্ন: ${question}\nউত্তর: ${answer}`;
+            try {
+                const jsonString = await callGeminiAPI(prompt, true);
+                const result = JSON.parse(jsonString);
+                if (result.tags) document.getElementById('tags').value = result.tags;
+                if (result.keywords) document.getElementById('keywords').value = result.keywords;
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                alert("দুঃখিত, AI দিয়ে ট্যাগ ও কীওয়ার্ড তৈরি করা সম্ভব হয়নি।");
+            } finally {
+                hideLoader();
+            }
         });
 
-        document.getElementById('download-btn').addEventListener('click', () => {
-            const dataStr = JSON.stringify(jsonData, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = 'data_updated.json';
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-        });
+        // Event listeners from v3...
+        fileUpload.addEventListener('change', event => { const file = event.target.files[0]; if (file) { fileNameDisplay.textContent = file.name; const reader = new FileReader(); reader.onload = e => { try { jsonData = JSON.parse(e.target.result); saveDataToLocal(); dataControls.classList.remove('hidden'); currentPage = 1; updateDisplay(); } catch (error) { alert('ত্রুটি: ফাইলটি সঠিক JSON ফরম্যাটে নেই।'); } }; reader.readAsText(file); } });
+        searchInput.addEventListener('keyup', () => { currentPage = 1; updateDisplay(); });
+        rowsPerPageSelect.addEventListener('change', () => { rowsPerPage = parseInt(rowsPerPageSelect.value); currentPage = 1; updateDisplay(); });
+        document.querySelectorAll('.sortable').forEach(header => header.addEventListener('click', handleSort));
+        document.getElementById('add-new-btn').addEventListener('click', () => openFormModal('নতুন ডাটা যোগ করুন'));
+        document.body.addEventListener('click', e => { const editBtn = e.target.closest('.edit-btn'); const deleteBtn = e.target.closest('.delete-btn'); if (editBtn) { const id = editBtn.getAttribute('data-id'); const dataToEdit = jsonData.find(item => item.id == id); if (dataToEdit) openFormModal('ডাটা এডিট করুন', dataToEdit); } if (deleteBtn) { const id = deleteBtn.getAttribute('data-id'); openDeleteModal(id); } });
+        confirmDeleteBtn.addEventListener('click', () => { if (itemToDeleteId) { jsonData = jsonData.filter(item => item.id != itemToDeleteId); saveDataToLocal(); const totalPages = Math.ceil((filteredData.length - 1) / rowsPerPage); if (currentPage > totalPages) { currentPage = totalPages || 1; } updateDisplay(); } closeDeleteModal(); });
+        cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+        modalCloseBtn.addEventListener('click', closeFormModal);
+        modalCancelBtn.addEventListener('click', closeFormModal);
+        form.addEventListener('submit', e => { e.preventDefault(); const idToEdit = editIdInput.value; const serialNo = document.getElementById('serial_no').value; const newId = parseInt(bengaliToEnglishNumber(serialNo), 10); if (isNaN(newId)) { alert('অনুগ্রহ করে সঠিক সিরিয়াল নম্বর দিন।'); return; } const isDuplicate = jsonData.some(item => (idToEdit && item.id == idToEdit) ? false : item.id === newId); if (isDuplicate) { alert('ত্রুটি: এই সিরিয়াল নম্বরটি ইতিমধ্যে ব্যবহার করা হয়েছে।'); return; } const formData = { id: newId, serial_no: serialNo, question: document.getElementById('question').value, answer: document.getElementById('answer').value, details: document.getElementById('details').value, key_point: document.getElementById('key_point').value, law_section: document.getElementById('law_section').value, case_reference: document.getElementById('case_reference').value, tags: document.getElementById('tags').value.split(',').map(s => s.trim()).filter(Boolean), keywords: document.getElementById('keywords').value.split(',').map(s => s.trim()).filter(Boolean), year: parseInt(document.getElementById('year').value) || null, source: document.getElementById('source').value, law_reference_link: document.getElementById('law_reference_link').value, related_ids: document.getElementById('related_ids').value.split(',').map(s => parseInt(bengaliToEnglishNumber(s.trim()))).filter(num => !isNaN(num)), last_updated: new Date().toISOString().split('T')[0] }; if (idToEdit) { const index = jsonData.findIndex(item => item.id == idToEdit); if (index !== -1) jsonData[index] = { ...jsonData[index], ...formData }; } else { jsonData.push(formData); } saveDataToLocal(); updateDisplay(); closeFormModal(); });
+        document.getElementById('download-btn').addEventListener('click', () => { if(jsonData.length === 0){ alert("ডাউনলোড করার মতো কোনো ডাটা নেই।"); return; } const dataStr = JSON.stringify(jsonData, null, 2); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', 'data_updated.json'); linkElement.click(); });
+        
+        loadDataFromLocal();
     });
 </script>
 
 </body>
 </html>
-
