@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Filter AI Data Manager v6</title>
+    <title>Advanced Filter AI Data Manager v8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
    <style>
@@ -43,7 +43,7 @@
         .ai-btn:hover { color: #3b82f6; }
 
         /* Filter & Tag Styles */
-        .tag-item { cursor: pointer; transition: background-color 0.2s; }
+        .tag-item, .related-id-link { cursor: pointer; transition: background-color 0.2s; }
         .active-filter-badge { display: inline-flex; align-items: center; background-color: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; }
         .remove-filter-btn { margin-left: 6px; background: none; border: none; cursor: pointer; color: #4f46e5; }
    </style>
@@ -117,13 +117,19 @@
                 <form id="data-form" class="space-y-6">
                     <input type="hidden" id="edit-id">
                     <fieldset class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label for="serial_no" class="block text-sm font-semibold text-gray-600 mb-1">সিরিয়াল নং (বাংলায়)</label><input type="text" id="serial_no" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div><div><label for="year" class="block text-sm font-semibold text-gray-600 mb-1">বছর</label><input type="number" id="year" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div></fieldset><hr>
-                    <fieldset class="space-y-4"><div><label for="question" class="block text-sm font-semibold text-gray-600 mb-1">প্রশ্ন</label><textarea id="question" rows="2" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></textarea></div><div><label for="answer" class="block text-sm font-semibold text-gray-600 mb-1">উত্তর</label><textarea id="answer" rows="3" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></textarea></div><div><label for="details" class="block text-sm font-semibold text-gray-600 mb-1">বিস্তারিত</label><textarea id="details" rows="4" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></textarea></div></fieldset><hr>
                     <fieldset class="space-y-4">
-                         <div>
+                        <div><label for="question" class="block text-sm font-semibold text-gray-600 mb-1">প্রশ্ন</label><textarea id="question" rows="2" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></textarea></div>
+                        <div><label for="answer" class="block text-sm font-semibold text-gray-600 mb-1">উত্তর</label><textarea id="answer" rows="3" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></textarea></div>
+                        <div><label for="details" class="block text-sm font-semibold text-gray-600 mb-1">বিস্তারিত</label><textarea id="details" rows="4" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></textarea></div>
+                        <div>
                             <label for="key_point" class="block text-sm font-semibold text-gray-600 mb-1">মূল পয়েন্ট</label>
                             <div class="relative"><input type="text" id="key_point" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition pr-10"><button type="button" id="generate-key-point-btn" class="ai-btn" title="AI দিয়ে মূল পয়েন্ট তৈরি করুন">✨</button></div>
                         </div>
-                        <div><label for="law_section" class="block text-sm font-semibold text-gray-600 mb-1">আইনের ধারা</label><input type="text" id="law_section" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div><div><label for="case_reference" class="block text-sm font-semibold text-gray-600 mb-1">মামলার রেফারেন্স</label><input type="text" id="case_reference" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div></fieldset><hr>
+                    </fieldset><hr>
+                    <fieldset class="space-y-4">
+                        <div><label for="law_section" class="block text-sm font-semibold text-gray-600 mb-1">আইনের ধারা</label><input type="text" id="law_section" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div>
+                        <div><label for="case_reference" class="block text-sm font-semibold text-gray-600 mb-1">মামলার রেফারেন্স</label><input type="text" id="case_reference" class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-2 focus:ring-indigo-500 transition"></div>
+                    </fieldset><hr>
                      <fieldset class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="tags" class="block text-sm font-semibold text-gray-600 mb-1">ট্যাগ (কমা দিয়ে আলাদা)</label>
@@ -265,6 +271,15 @@
             if (!Array.isArray(tags) || tags.length === 0) return '';
             return `<div class="${containerClass}">${tags.map(tag => `<span class="tag-item inline-block bg-indigo-100 text-indigo-800 text-xs font-medium mr-2 mb-2 px-2.5 py-1 rounded-full hover:bg-indigo-200" data-tag="${tag}">${tag}</span>`).join('')}</div>`;
         };
+
+        const renderRelatedIdSpans = (related_ids) => {
+            if (!Array.isArray(related_ids) || related_ids.length === 0) return '';
+            return related_ids.map(id => {
+                const relatedItem = jsonData.find(d => d.id === id);
+                const relatedQuestion = relatedItem ? relatedItem.question.replace(/"/g, '&quot;') : 'প্রশ্ন পাওয়া যায়নি';
+                return `<span class="related-id-link inline-block bg-gray-200 text-gray-800 text-xs font-medium mr-2 mb-2 px-2 py-1 rounded hover:bg-blue-200 hover:text-blue-800" data-id="${id}" title="${relatedQuestion}">${englishToBengaliNumber(id)}</span>`;
+            }).join('');
+        };
         
         const renderPaginatedData = () => { 
             tableBody.innerHTML=''; 
@@ -276,9 +291,8 @@
             
             pageItems.forEach(item=>{
                 const tagsHTML = renderTags(item.tags, 'pt-2');
-                const relatedIdsHTML = item.related_ids && item.related_ids.length > 0
-                    ? `<div class="pt-2"><span class="font-semibold text-xs text-gray-500">সম্পর্কিত:</span> ${item.related_ids.map(id => `<span class="inline-block bg-gray-200 text-gray-800 text-xs font-medium mr-2 px-2 py-0.5 rounded">${englishToBengaliNumber(id)}</span>`).join('')}</div>`
-                    : '';
+                const relatedIdSpans = renderRelatedIdSpans(item.related_ids);
+                const relatedIdsHTML = relatedIdSpans ? `<div class="pt-2"><span class="font-semibold text-xs text-gray-500">সম্পর্কিত:</span><div class="flex flex-wrap mt-1">${relatedIdSpans}</div></div>` : '';
 
                 const row=document.createElement('tr'); 
                 row.className='bg-white border-b hover:bg-gray-50'; 
@@ -288,6 +302,9 @@
                                <td class="px-6 py-4 text-center"><button class="edit-btn text-blue-600 hover:underline font-semibold" data-id="${item.id}">এডিট</button><button class="delete-btn text-red-600 hover:underline font-semibold ml-4" data-id="${item.id}">ডিলিট</button></td>`; 
                 tableBody.appendChild(row); 
                 
+                const relatedIdSpansCard = renderRelatedIdSpans(item.related_ids);
+                const relatedIdsCardHTML = relatedIdSpansCard ? `<div class="card-field"><label class="card-label">সম্পর্কিত আইডি</label><div class="flex flex-wrap gap-2 mt-1">${relatedIdSpansCard}</div></div>` : '';
+
                 const card=document.createElement('div'); 
                 card.className='card-item'; 
                 card.innerHTML=`<div class="card-header"><span class="card-serial">${item.serial_no||''}</span><div class="card-actions"><button class="edit-btn text-blue-500 font-bold" data-id="${item.id}">এডিট</button><button class="delete-btn text-red-500 font-bold" data-id="${item.id}">ডিলিট</button></div></div>
@@ -295,7 +312,7 @@
                                     <div class="card-field"><label class="card-label">প্রশ্ন</label><p class="card-value">${item.question||''}</p></div>
                                     <div class="card-field"><label class="card-label">উত্তর</label><p class="card-value">${(item.answer||'').substring(0,150)}...</p></div>
                                     ${item.tags && item.tags.length > 0 ? `<div class="card-field"><label class="card-label">ট্যাগ</label>${renderTags(item.tags)}</div>` : ''}
-                                    ${item.related_ids && item.related_ids.length > 0 ? `<div class="card-field"><label class="card-label">সম্পর্কিত আইডি</label><p class="card-value">${item.related_ids.map(id => englishToBengaliNumber(id)).join(', ')}</p></div>` : ''}
+                                    ${relatedIdsCardHTML}
                                 </div>`; 
                 mobileCardsContainer.appendChild(card);
             });
@@ -334,14 +351,27 @@
                 fileNameDisplay.textContent = file.name; 
                 const reader = new FileReader(); 
                 reader.onload = e => { 
-                    try { 
-                        jsonData = JSON.parse(e.target.result); 
+                    try {
+                        const fileContent = e.target.result;
+                        if (!fileContent || fileContent.trim() === '') {
+                            jsonData = [];
+                        } else {
+                            jsonData = JSON.parse(fileContent);
+                        }
+
+                        if (!Array.isArray(jsonData)) {
+                            throw new Error("JSON must be an array of objects.");
+                        }
+                        
                         saveDataToLocal(); 
                         dataControls.classList.remove('hidden'); 
                         currentPage = 1; 
                         populateFilters();
                         updateDisplay(); 
-                    } catch (error) { alert('ত্রুটি: ফাইলটি সঠিক JSON ফরম্যাটে নেই।'); } 
+                    } catch (error) { 
+                        console.error("JSON Parsing Error:", error);
+                        alert(`ত্রুটি: ফাইলটি সঠিক JSON ফরম্যাটে নেই।\n\nবিস্তারিত: ${error.message}`);
+                    } 
                 }; 
                 reader.readAsText(file); 
             } 
@@ -357,6 +387,7 @@
             const editBtn = e.target.closest('.edit-btn'); 
             const deleteBtn = e.target.closest('.delete-btn'); 
             const tagBtn = e.target.closest('.tag-item');
+            const relatedIdLink = e.target.closest('.related-id-link');
 
             if (editBtn) { const id = editBtn.getAttribute('data-id'); const dataToEdit = jsonData.find(item => item.id == id); if (dataToEdit) openFormModal('ডাটা এডিট করুন', dataToEdit); } 
             if (deleteBtn) { const id = deleteBtn.getAttribute('data-id'); openDeleteModal(id); }
@@ -366,6 +397,22 @@
                     selectedTags.push(tag);
                     currentPage = 1;
                     updateDisplay();
+                }
+            }
+            if (relatedIdLink) {
+                const idToFind = relatedIdLink.getAttribute('data-id');
+                searchInput.value = '';
+                selectedTags = [];
+                yearFilter.value = 'all';
+                selectedYear = 'all';
+                
+                searchInput.value = englishToBengaliNumber(idToFind);
+                currentPage = 1;
+                updateDisplay();
+                
+                const dataControlsElement = document.getElementById('data-controls');
+                if (dataControlsElement) {
+                    dataControlsElement.scrollIntoView({ behavior: 'smooth' });
                 }
             }
         });
@@ -415,20 +462,35 @@
                     }
 
                     const currentQuestion = formData.question;
+                    const currentAnswer = formData.answer;
                     const currentId = formData.id;
                     let finalRelatedIds = new Set(formData.related_ids);
 
-                    if (currentQuestion) {
+                    if (currentQuestion || currentAnswer) {
                         jsonData.forEach(item => {
                             if (item.id === currentId) return;
-                            if (item.question) {
-                                const sim = stringSimilarity(currentQuestion, item.question);
-                                if (sim >= 0.6) {
-                                    finalRelatedIds.add(item.id);
-                                    if (!Array.isArray(item.related_ids)) item.related_ids = [];
-                                    if (!item.related_ids.includes(currentId)) {
-                                        item.related_ids.push(currentId);
-                                    }
+                            
+                            let isRelated = false;
+
+                            if(currentQuestion && item.question) {
+                                const questionSim = stringSimilarity(currentQuestion, item.question);
+                                if (questionSim >= 0.6) {
+                                    isRelated = true;
+                                }
+                            }
+
+                            if(!isRelated && currentAnswer && item.answer) {
+                                const answerSim = stringSimilarity(currentAnswer, item.answer);
+                                if (answerSim >= 0.6) {
+                                    isRelated = true;
+                                }
+                            }
+                            
+                            if(isRelated) {
+                                finalRelatedIds.add(item.id);
+                                if (!Array.isArray(item.related_ids)) item.related_ids = [];
+                                if (!item.related_ids.includes(currentId)) {
+                                    item.related_ids.push(currentId);
                                 }
                             }
                         });
@@ -454,7 +516,7 @@
             });
 
             generateKeyPointBtn.addEventListener('click', async () => { const answer = document.getElementById('answer').value; const details = document.getElementById('details').value; if (!answer && !details) { alert('অনুগ্রহ করে "উত্তর" বা "বিস্তারিত" অংশটি পূরণ করুন।'); return; } showLoader(); const prompt = `নিচের লেখাটি পড়ে এর একটি সংক্ষিপ্ত ও প্রধান মূল পয়েন্ট এক বাক্যে তৈরি করে দাও:\n\nউত্তর: ${answer}\nবিস্তারিত: ${details}`; try { const result = await callGeminiAPI(prompt); document.getElementById('key_point').value = result.trim(); } catch (error) { console.error("Gemini API Error:", error); alert("দুঃখিত, AI দিয়ে মূল পয়েন্ট তৈরি করা সম্ভব হয়নি।"); } finally { hideLoader(); } });
-            generateTagsBtn.addEventListener('click', async () => { const question = document.getElementById('question').value; const answer = document.getElementById('answer').value; if (!question || !answer) { alert('অনুগ্রহ করে "প্রশ্ন" এবং "উত্তর" অংশটি পূরণ করুন।'); return; } showLoader(); const prompt = `নিচের প্রশ্ন ও উত্তরের উপর ভিত্তি করে কিছু ট্যাগ এবং কীওয়ার্ড তৈরি করে দাও। আউটপুটটি অবশ্যই JSON ফরম্যাটে দিবে যেখানে 'tags' এবং 'keywords' নামে দুটি কী থাকবে এবং তাদের মান কমা-সেপারেটেড স্ট্রিং হবে।\n\nপ্রশ্ন: ${question}\nউত্তর: ${answer}`; try { const jsonString = await callGeminiAPI(prompt, true); const result = JSON.parse(jsonString); if (result.tags) document.getElementById('tags').value = result.tags; if (result.keywords) document.getElementById('keywords').value = result.keywords; } catch (error) { console.error("Gemini API Error:", error); alert("দুঃখিত, AI দিয়ে ট্যাগ ও কীওয়ার্ড তৈরি করা সম্ভব হয়নি।"); } finally { hideLoader(); } });
+            generateTagsBtn.addEventListener('click', async () => { const question = document.getElementById('question').value; const answer = document.getElementById('answer').value; if (!question || !answer) { alert('অনুগ্রহ করে "প্রশ্ন" এবং "উত্তর" অংশটি পূরণ করুন।'); return; } showLoader(); const prompt = `নিচের প্রশ্ন ও উত্তরের উপর ভিত্তি করে কিছু ট্যাগ এবং কীওয়ার্ড তৈরি করে দাও। আউটপুুটটি অবশ্যই JSON ফরম্যাটে দিবে যেখানে 'tags' এবং 'keywords' নামে দুটি কী থাকবে এবং তাদের মান কমা-সেপারেটেড স্ট্রিং হবে।\n\nপ্রশ্ন: ${question}\nউত্তর: ${answer}`; try { const jsonString = await callGeminiAPI(prompt, true); const result = JSON.parse(jsonString); if (result.tags) document.getElementById('tags').value = result.tags; if (result.keywords) document.getElementById('keywords').value = result.keywords; } catch (error) { console.error("Gemini API Error:", error); alert("দুঃখিত, AI দিয়ে ট্যাগ ও কীওয়ার্ড তৈরি করা সম্ভব হয়নি।"); } finally { hideLoader(); } });
         }
 
         document.getElementById('download-btn').addEventListener('click', () => { if(jsonData.length === 0){ alert("ডাউনলোড করার মতো কোনো ডাটা নেই।"); return; } const dataStr = JSON.stringify(jsonData, null, 2); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', 'data_updated.json'); linkElement.click(); });
